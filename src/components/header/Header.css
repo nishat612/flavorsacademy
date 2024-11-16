@@ -1,0 +1,78 @@
+.App-header {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  
+  .App-header nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  
+.App-header nav ul li {
+  margin: 0 15px;
+}
+
+.App-header nav ul li a {
+  text-decoration: none;
+  color: #000;
+}
+
+  
+  
+.nav-left {
+  display: flex;
+  align-items: center;
+}
+
+  .nav-right {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .logo-icon {
+    color: #000;
+    font-size: 30px;
+    margin-right: 10px;
+  }
+  
+  .logo {
+    font-size: 24px;
+    font-weight: bold;
+    text-decoration: none; 
+     
+  }
+
+  .logo-link{
+    text-decoration: none;
+    color: inherit;  
+  }
+  
+  .nav-right ul li a {
+    text-decoration: none;
+    color: #000;
+  }
+  .logout-button {
+    background: none;
+    border: none;
+    color: #000;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 0 15px;
+    padding: 0;
+    text-decoration: underline;
+  }
+  
+  .logout-button:hover {
+    color: #555;
+    text-decoration: none;
+  }

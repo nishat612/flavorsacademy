@@ -1,0 +1,140 @@
+/* Container for the whole signup page */
+.signup-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  /* Toggle button section */
+  .toggle-buttons {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  /* Styles for each toggle button */
+  .toggle-button {
+    padding: 10px 20px;
+    cursor: pointer;
+    background-color: #f0f0f0;
+    color: #000;
+    border: none;
+    border-radius: 5px;
+    margin-right: 10px;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  /* Active button styles */
+  .toggle-button.active {
+    background-color: #4CAF50;
+    color: #fff;
+  }
+  
+  /* Signup form styles */
+  .signup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: left;
+  }
+  
+  /* Label and input styling */
+  .signup-form label {
+    font-weight: bold;
+  }
+  
+  .form-input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  /* Submit button styling */
+  .submit-button {
+    padding: 10px;
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    width: 250px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .submit-button:hover {
+    background-color: #45a049;
+   
+    
+  }
+  .button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+
+  .error-message {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 5px;
+  }
+
+  /* Toast Notification */
+.toast {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    background-color: rgba(76, 175, 80, 0.9);
+    color: #fff;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    text-align: center;
+    width: 250px;
+    animation: slide-in 0.5s ease-out, slide-out 0.5s ease-out 9.5s; /* Slide in and out */
+  }
+  
+  /* Toast Slide In and Out Animations */
+  @keyframes slide-in {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slide-out {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+  
+  /* Close Button for Toast */
+  .close-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+
+
+  
+  

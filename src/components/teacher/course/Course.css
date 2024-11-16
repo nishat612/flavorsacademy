@@ -1,0 +1,53 @@
+/* Container for the courses section */
+.courses-container {
+    padding: 20px;
+    display: flex;
+    justify-content: flex-start; /* Align to the left */
+  }
+  
+  /* Card styling */
+  .card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    max-width: 500px;
+    width: 100%;
+    text-align: left; /* Align text to the left */
+  }
+  
+  /* Heading styling */
+  .card h2 {
+    margin-bottom: 15px;
+    font-size: 1.5em;
+    color: #333;
+    text-align: left; /* Align heading to the left */
+  }
+  
+  /* Course list styling */
+  .course-list {
+    list-style-position: inside; /* Align numbers with text */
+    padding-left: 0;
+    margin: 0;
+  }
+  
+  .course-item {
+    margin: 5px 0;
+  }
+  
+  
+  /* Remove extra indentation of the ordered list */
+  .course-list li::marker {
+    font-weight: bold;
+    padding-right: 5px; /* Adjusts space between number and text */
+  }
+  .course-item a {
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+  }
+  
+  .course-item a:hover {
+    color: #0056b3;
+  }
+  

@@ -1,0 +1,29 @@
+.App {
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+main {
+  display: flex;
+  justify-content: space-between;
+  margin: 50px 100px;
+}
+
+.welcome-section {
+  border: 1px solid #ccc;
+  padding: 50px;
+  width: 60%;
+}
+
+.enroll-section {
+  border: 1px solid #ccc;
+  padding: 50px;
+  width: 30%;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+

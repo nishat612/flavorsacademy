@@ -1,0 +1,22 @@
+.App-footer {
+    background-color: #f0f0f0;
+    padding: 10px;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+    border-top: 1px solid #ccc;
+    text-align: center;
+  }
+  
+  .App-footer ul {
+    list-style-type: none;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+  
+  .App-footer ul li a {
+    text-decoration: none;
+    color: #000;
+  }
+  
