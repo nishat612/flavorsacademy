@@ -181,21 +181,26 @@ def get_all_course_content():
 def get_course_content():
     course_id = request.args.get('courseId')
     teacher_id = request.args.get('teacherId')
-
+    content_name = request.args.get('courseContent')
+  
     if not course_id or not teacher_id:
         return jsonify({"message": "Course ID and Teacher ID are required"}), 400
 
     query = """
         SELECT * FROM course_content
-        WHERE cid = %s AND tid = %s AND content_name = 'course description'
+        WHERE cid = %s AND tid = %s AND content_name = %s
     """
-    content = fetch_data(query, (course_id, teacher_id))
-    
+    content = fetch_data(query, (course_id, teacher_id, content_name))
+    if(content_name == 'syllabus'):
+
+        print("cid, tid, cc, content", course_id, teacher_id, content_name, content)
     if content:
         return jsonify({"content": content[0]})
     else:
         # Return empty string for content if not found
+       
         return jsonify({"content": ""}), 200
+    
 
 
 
@@ -206,17 +211,17 @@ def save_course_content():
     teacher_id = data.get('teacherId')
     content_name = data.get('contentName')
     text = data.get('text')
-
+    print("cid, tid, cc, content", course_id, teacher_id, content_name, text)
     if not course_id or not teacher_id:
         return jsonify({"message": "Course ID and Teacher ID are required"}), 400
 
     if not content_name or not text:
         return jsonify({"message": "Content Name and Text are required"}), 400
 
-    # Fetch the idcourse_content if it exists for the given cid and tid
+    # Check if a specific content already exists based on cid, tid, and content_name
     existing_content = fetch_data(
-        "SELECT idcourse_content FROM course_content WHERE cid = %s AND tid = %s",
-        (course_id, teacher_id)
+        "SELECT idcourse_content FROM course_content WHERE cid = %s AND tid = %s AND content_name = %s",
+        (course_id, teacher_id, content_name)
     )
 
     if existing_content:
@@ -225,52 +230,73 @@ def save_course_content():
         
         # Update the existing content using idcourse_content
         execute_query(
-            "UPDATE course_content SET content_name = %s, text = %s WHERE idcourse_content = %s",
-            ("course description", text, idcourse_content)
+            "UPDATE course_content SET text = %s WHERE idcourse_content = %s",
+            (text, idcourse_content)
         )
         message = "Content updated successfully"
     else:
-        # Insert a new entry if no content exists
+        # Insert a new entry if no content exists with the specified content_name
         execute_query(
             "INSERT INTO course_content (cid, tid, content_name, text) VALUES (%s, %s, %s, %s)",
-            (course_id, teacher_id, "course description", text)
+            (course_id, teacher_id, content_name, text)
         )
         message = "Content created successfully"
 
     return jsonify({"message": message}), 200
 
-# @app.route('/courseContent', methods=['POST'])
-# def save_course_content():
-#     data = request.get_json()
-#     course_id = data.get('courseId')
-#     teacher_id = data.get('teacherId')
-#     content_name = data.get('contentName')
-#     text = data.get('text')
-#     file_name = data.get('fileName')
 
-#     if not course_id or not teacher_id or not content_name:
-#         return jsonify({"message": "Course ID, Teacher ID, and Content Name are required"}), 400
+@app.route('/syllabus', methods=['GET', 'POST'])
+def handle_syllabus():
+    course_id = request.args.get('courseId') if request.method == 'GET' else request.json.get('courseId')
+    teacher_id = request.args.get('teacherId') if request.method == 'GET' else request.json.get('teacherId')
+    content_name = "syllabus"
 
-#     # Check if the content already exists
-#     existing_content = fetch_data(
-#         "SELECT * FROM course_content WHERE cid = %s AND tid = %s AND content_name = %s",
-#         (course_id, teacher_id, content_name)
-#     )
+    if not course_id or not teacher_id:
+        return jsonify({"message": "Course ID and Teacher ID are required"}), 400
 
-#     if existing_content:
-#         # Update existing content
-#         execute_query(
-#             "UPDATE course_content SET text = %s, file_name = %s WHERE cid = %s AND tid = %s AND content_name = %s",
-#             (text, file_name, course_id, teacher_id, content_name)
-#         )
-#     else:
-#         # Insert new content
-#         execute_query(
-#             "INSERT INTO course_content (cid, tid, content_name, text, file_name) VALUES (%s, %s, %s, %s, %s)",
-#             (course_id, teacher_id, content_name, text, file_name)
-#         )
+    if request.method == 'GET':
+        try:
+            query = """
+                SELECT text FROM course_content 
+                WHERE cid = %s AND tid = %s AND content_name = %s
+            """
+            content = fetch_data(query, (course_id, teacher_id, content_name))
+            
+            file_url = content[0]['text'] if content else ""  # Return empty if no syllabus entry exists
+            return jsonify({"fileUrl": file_url}), 200
+        except Exception as e:
+            print(f"Error fetching syllabus: {e}")
+            return jsonify({"message": "Error fetching syllabus"}), 500
 
-#     return jsonify({"message": "Content saved successfully"}), 200
+    elif request.method == 'POST':
+        file_url = request.json.get('fileUrl')  # URL of the uploaded file
+        if not file_url:
+            return jsonify({"message": "File URL is required"}), 400
+
+        try:
+            existing_content = fetch_data(
+                "SELECT idcourse_content FROM course_content WHERE cid = %s AND tid = %s AND content_name = %s",
+                (course_id, teacher_id, content_name)
+            )
+
+            if existing_content:
+                execute_query(
+                    "UPDATE course_content SET text = %s WHERE cid = %s AND tid = %s AND content_name = %s",
+                    (file_url, course_id, teacher_id, content_name)
+                )
+                message = "Syllabus updated successfully"
+            else:
+                execute_query(
+                    "INSERT INTO course_content (cid, tid, content_name, text) VALUES (%s, %s, %s, %s)",
+                    (course_id, teacher_id, content_name, file_url)
+                )
+                message = "Syllabus uploaded successfully"
+
+            return jsonify({"message": message}), 200
+        except Exception as e:
+            print(f"Error saving syllabus: {e}")
+            return jsonify({"message": "Error saving syllabus"}), 500
+
 
 
 if __name__ == '__main__':

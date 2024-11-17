@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { getCourseContent, saveCourseDescription, getAllCourseContent, saveCourseContent } from '../../../services/apiService';
+import { getCourseContent, saveCourseDescription, getSyllabus, saveSyllabus } from '../../../services/apiService';
 import './CourseContent.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import UploadModal from './UploadModal';
-
+import AddContentModal from './AddContentModal';
 function CourseContent() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -25,19 +25,21 @@ function CourseContent() {
       }
 
       try {
-        // Fetch the syllabus
-        const syllabusResponse = await getCourseContent(courseId, teacherId, 'syllabus');
-        if (syllabusResponse?.content) {
-          setSyllabusUrl(syllabusResponse.content.text);
-          setFileName(syllabusResponse.content.fileName || '');
+        // Fetch syllabus file path if it exists
+        const syllabusResponse = await getSyllabus(courseId, teacherId);
+        if (syllabusResponse?.fileUrl) {
+          setSyllabusUrl(syllabusResponse.fileUrl);
+          setFileName('Syllabus');  // Set a default name for the file link
+        } else {
+          setSyllabusUrl('');
+          setFileName('');
         }
 
         // Fetch the course description
-        const descriptionResponse = await getCourseContent(courseId, teacherId);
+        const descriptionResponse = await getCourseContent(courseId, teacherId, 'course description');
         if (descriptionResponse?.content) {
           setDescription(descriptionResponse.content.text || '');
         }
-
       } catch (error) {
         console.error("Error fetching course data:", error);
       }
@@ -70,13 +72,11 @@ function CourseContent() {
     setFileName(name);
     setSuccessMessage("File uploaded successfully!");
 
-    // Save the uploaded file link and file name to your database
-    await saveCourseContent({
+    // Save or update the syllabus URL in the database
+    await saveSyllabus({
       courseId,
       teacherId,
-      contentName: 'syllabus',
-      text: url,
-      fileName: name,
+      fileUrl: url,
     });
 
     // Clear the success message after 5 seconds
@@ -117,14 +117,14 @@ function CourseContent() {
       {syllabusUrl ? (
         <p>
           <a href={syllabusUrl} target="_blank" rel="noopener noreferrer">
-            {fileName}
+            {fileName || 'Download Syllabus'}
           </a>
         </p>
       ) : (
         <p>No syllabus uploaded yet.</p>
       )}
       <button onClick={() => setShowUploadModal(true)}>
-        Upload Syllabus
+        {syllabusUrl ? "Replace Syllabus" : "Upload Syllabus"}
       </button>
       {showUploadModal && (
         <UploadModal
@@ -135,6 +135,8 @@ function CourseContent() {
         />
       )}
       {successMessage && <p className="success-message">{successMessage}</p>}
+
+      <h2>Course Content</h2>
     </div>
   );
 }

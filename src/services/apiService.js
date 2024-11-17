@@ -95,9 +95,9 @@ export const getAllCourseContent = async (courseId, teacherId) => {
   }
 };
 
-export const getCourseContent = async (courseId, teacherId) => {
+export const getCourseContent = async (courseId, teacherId, courseContent) => {
   try {
-    const response = await fetch(`/courseContent?courseId=${courseId}&teacherId=${teacherId}`, {
+    const response = await fetch(`/courseContent?courseId=${courseId}&teacherId=${teacherId}&courseContent=${courseContent}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -109,6 +109,8 @@ export const getCourseContent = async (courseId, teacherId) => {
     console.error("Error fetching course content:", error);
   }
 };
+
+
 
 // Save or update course description
 export const saveCourseDescription = async (courseId, teacherId, description) => {
@@ -140,5 +142,36 @@ export const saveCourseContent = async ({ courseId, teacherId, contentName, text
     return response.json();
   } catch (error) {
     console.error("Error saving course content:", error);
+  }
+};
+
+// Existing POST function to save syllabus
+export const saveSyllabus = async ({ courseId, teacherId, fileUrl }) => {
+  try {
+    const response = await fetch('/syllabus', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ courseId, teacherId, fileUrl })
+    });
+    return response.json();
+  } catch (error) {
+    console.error("Error saving syllabus:", error);
+  }
+};
+
+// New GET function to fetch syllabus file path
+export const getSyllabus = async (courseId, teacherId) => {
+  try {
+    const response = await fetch(`/syllabus?courseId=${courseId}&teacherId=${teacherId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching syllabus:", error);
   }
 };

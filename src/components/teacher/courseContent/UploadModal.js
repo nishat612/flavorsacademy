@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage } from '../../../firebase/firebaseConfig';
-
+import { saveSyllabus } from '../../../services/apiService';
 
 function UploadModal({ onClose, onUploadComplete, courseId, teacherId }) {
   const [file, setFile] = useState(null);
@@ -30,12 +29,16 @@ function UploadModal({ onClose, onUploadComplete, courseId, teacherId }) {
         console.error("Upload error:", error);
         setIsUploading(false);
       },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-          onUploadComplete(url, file.name);  // Call the callback with URL and filename
-          setIsUploading(false);
-          onClose();  // Close the modal
-        });
+      async () => {
+        const url = await getDownloadURL(uploadTask.snapshot.ref);
+        
+        // Call the API to save file URL in database
+        await saveSyllabus(courseId, teacherId, url);
+
+        // Notify parent component of successful upload
+        onUploadComplete(url, file.name);
+        setIsUploading(false);
+        onClose();
       }
     );
   };
