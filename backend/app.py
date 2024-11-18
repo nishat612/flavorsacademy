@@ -1,8 +1,10 @@
+import json
 from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 from flask_session import Session
 import mysql.connector
 from werkzeug.security import generate_password_hash, check_password_hash
+
 import secrets
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)  # Replace with a strong secret key
@@ -23,8 +25,13 @@ db = mysql.connector.connect(
     database="flavorsacademy"
 )
 
-# Function to execute a query and return the last inserted ID
 def execute_query(query, values):
+    db = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="root",
+        database="flavorsacademy"
+    )
     cursor = db.cursor(dictionary=True)
     try:
         cursor.execute(query, values)
@@ -32,9 +39,16 @@ def execute_query(query, values):
         return cursor.lastrowid
     finally:
         cursor.close()
+        db.close()
 
 # Function to fetch data
 def fetch_data(query, values):
+    db = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="root",
+        database="flavorsacademy"
+    )
     cursor = db.cursor(dictionary=True)
     try:
         cursor.execute(query, values)
@@ -42,6 +56,7 @@ def fetch_data(query, values):
         return result
     finally:
         cursor.close()
+        db.close()
 
 
 
@@ -69,7 +84,6 @@ def signup():
     elif role == 'teacher':
         teacher_id = execute_query(
             "INSERT INTO teacher (firstname, lastname, email) VALUES (%s, %s, %s)",
-            (first_name, last_name, email)
         )
         execute_query(
             "INSERT INTO users (tid, email, password) VALUES (%s, %s, %s)",
@@ -297,6 +311,159 @@ def handle_syllabus():
             print(f"Error saving syllabus: {e}")
             return jsonify({"message": "Error saving syllabus"}), 500
 
+@app.route('/courseContentHandler', methods=['GET', 'POST'])
+def handle_course_content():
+    course_id = request.args.get('courseId') if request.method == 'GET' else request.json.get('courseId')
+    teacher_id = request.args.get('teacherId') if request.method == 'GET' else request.json.get('teacherId')
+    print("sdfhaiurehf", course_id ,  teacher_id)
+    content_name = 'course content'
+     
+    if not course_id or not teacher_id:
+        return jsonify({"message": "Course ID and Teacher ID are required"}), 400
+
+    # Handle GET request: retrieve course content
+    if request.method == 'GET':
+        try:
+            content = fetch_data(
+                "SELECT text FROM course_content WHERE cid = %s AND tid = %s AND content_name = %s", 
+                (course_id, teacher_id, content_name)
+            )
+
+            if content:
+                # Parse and return JSON data if content exists
+                return jsonify({"contentData": json.loads(content[0]['text'])}), 200
+            else:
+                # Return empty string if no content exists
+                return jsonify({"contentData": ""}), 200
+        except Exception as e:
+            print(f"Error fetching course content: {e}")
+            return jsonify({"message": "Error fetching course content"}), 500
+
+    # Handle POST request: save or update course content
+    elif request.method == 'POST':
+        new_content = request.json.get('content')  # New content to be appended
+
+        if not new_content:
+            return jsonify({"message": "Content data is required"}), 400
+
+        try:
+            # Check if existing course content exists
+            existing_content = fetch_data(
+                "SELECT text FROM course_content WHERE cid = %s AND tid = %s AND content_name = %s",
+                (course_id, teacher_id, content_name)
+            )
+
+            if existing_content:
+                # Append new content to existing JSON array
+                existing_json = json.loads(existing_content[0]['text']) if existing_content[0]['text'] else []
+                existing_json.append(new_content)
+                updated_text = json.dumps(existing_json)
+                
+                # Update course content in the database
+                execute_query(
+                    "UPDATE course_content SET text = %s WHERE cid = %s AND tid = %s AND content_name = %s",
+                    (updated_text, course_id, teacher_id, content_name)
+                )
+                message = "Course content updated successfully"
+            else:
+                # Insert new JSON array with content if none exists
+                content_json = json.dumps([new_content])
+                execute_query(
+                    "INSERT INTO course_content (cid, tid, content_name, text) VALUES (%s, %s, %s, %s)",
+                    (course_id, teacher_id, content_name, content_json)
+                )
+                message = "Course content added successfully"
+
+            return jsonify({"message": message}), 200
+        except Exception as e:
+            print(f"Error saving course content: {e}")
+            return jsonify({"message": "Error saving course content"}), 500
+        
+# 1. Get all courses
+
+@app.route('/api/courses', methods=['GET'])
+def get_courses():
+    try:
+        query = "SELECT * FROM course"
+        
+        # Pass an empty tuple as `values`
+        courses = fetch_data(query, ())
+        
+        # Convert JSON strings in 'sid' to lists or set to an empty list if no data
+        for course in courses:
+            course['sid'] = json.loads(course['sid']) if course['sid'] else []  # Set empty list if 'sid' is None or empty string
+        
+        return jsonify(courses), 200
+    except Exception as e:
+        print(f"Error fetching courses: {e}")
+        return jsonify({"message": "Error fetching courses"}), 500
+
+
+# 2. Get specific course details by course ID
+@app.route('/api/courses/<int:idcourse>', methods=['GET'])
+def get_course(idcourse):
+    try:
+        query = "SELECT * FROM course WHERE idcourse = %s"
+        course = fetch_data(query, (idcourse,))
+        if not course:
+            return jsonify({"message": "Course not found"}), 404
+
+        course[0]['sid'] = json.loads(course[0]['sid']) if course[0]['sid'] else []
+        return jsonify(course[0]), 200
+    except Exception as e:
+        print(f"Error fetching course: {e}")
+        return jsonify({"message": "Error fetching course"}), 500
+
+# 3. Enroll a student in a course
+@app.route('/api/courses/<int:idcourse>/enroll', methods=['PUT'])
+def enroll_student(idcourse):
+    data = request.get_json()
+    student_id = data.get("student_id")
+
+    if not student_id:
+        return jsonify({"message": "student_id is required"}), 400
+
+    try:
+        # Fetch existing student IDs for the course
+        course = fetch_data("SELECT sid FROM course WHERE idcourse = %s", (idcourse,))
+        if not course:
+            return jsonify({"message": "Course not found"}), 404
+
+        # Load and update the 'sid' field
+        sid_list = json.loads(course[0]['sid']) if course[0]['sid'] else []
+        
+        if student_id in sid_list:
+            return jsonify({"message": "Student already enrolled"}), 400
+        
+        sid_list.append(student_id)
+        updated_sid = json.dumps(sid_list)
+        
+        # Update the course with the new sid list
+        execute_query("UPDATE course SET sid = %s WHERE idcourse = %s", (updated_sid, idcourse))
+        return jsonify({"message": "Student enrolled successfully"}), 200
+    except Exception as e:
+        print(f"Error enrolling student: {e}")
+        return jsonify({"message": "Error enrolling student"}), 500
+
+# 4. Get teacher details by ID
+@app.route('/api/teachers/<int:tid>', methods=['GET'])
+def get_teacher(tid):
+    # Check if tid is non-zero and a valid identifier
+    if not tid:
+        return jsonify({"message": "Invalid teacher ID"}), 400
+
+    try:
+        query = "SELECT idteacher, firstname, lastname, email FROM teacher WHERE idteacher = %s"
+        teacher = fetch_data(query, (tid,))
+        
+        if not teacher:
+            return jsonify({"message": "Teacher not found"}), 404
+        
+        return jsonify(teacher[0]), 200
+
+    except Exception as e:
+        print(f"Error fetching teacher details: {e}")
+        return jsonify({"message": "Error fetching teacher details"}), 500
 
 
 if __name__ == '__main__':

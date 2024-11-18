@@ -175,3 +175,124 @@ export const getSyllabus = async (courseId, teacherId) => {
     console.error("Error fetching syllabus:", error);
   }
 };
+
+// services/apiService.js
+
+// Function to retrieve existing course content JSON data from the handle_course_content endpoint
+export const getCourseContentData = async (courseId, teacherId) => {
+  try {
+    console.log(courseId, teacherId )
+    const response = await fetch(`/courseContentHandler?courseId=${courseId}&teacherId=${teacherId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Include credentials if session handling is involved
+    });
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching course content data:", error);
+  }
+};
+
+// Function to save or update course content JSON data to the handle_course_content endpoint
+export const saveCourseContentData = async ({ courseId, teacherId, contentName, contentData }) => {
+  try {
+    const response = await fetch('/courseContentHandler', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ 
+        courseId, 
+        teacherId, 
+        contentName: contentName || 'course content',  // Default to 'course content' if not provided
+        content: contentData  // Pass the course content data
+      }),
+    });
+    return response.json();
+  } catch (error) {
+    console.error("Error saving course content data:", error);
+  }
+};
+
+// Function to get all courses
+export const getCourses = async () => {
+  try {
+    console.log("inside get course")
+    const response = await fetch('/api/courses', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include'
+    });
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching courses:", error);
+  }
+};
+
+// Function to get a specific course by ID
+export const getCourseById = async (courseId) => {
+  try {
+    const response = await fetch(`/api/courses/${courseId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include'
+    });
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching course:", error);
+  }
+};
+
+// Function to enroll a student in a course
+export const enrollInCourse = async (courseId, studentId) => {
+  try {
+    const response = await fetch(`/api/courses/${courseId}/enroll`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify({ student_id: studentId })
+    });
+    return response.json();
+  } catch (error) {
+    console.error("Error enrolling in course:", error);
+  }
+};
+
+// Function to get teacher details by ID
+export const getTeacherById = async (teacherId) => {
+  if (!teacherId) {
+    // If teacherId is null, undefined, or 0, return an empty string immediately
+    return "";
+  }
+
+  try {
+    const response = await fetch(`/api/teachers/${teacherId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include'
+    });
+
+    if (response.ok) {
+      // If the response is successful, return the JSON data
+      return await response.json();
+    } else {
+      // If the teacher is not found, return an empty string
+      return "";
+    }
+  } catch (error) {
+    console.error("Error fetching teacher details:", error);
+    // Return an empty string in case of an error
+    return "";
+  }
+};

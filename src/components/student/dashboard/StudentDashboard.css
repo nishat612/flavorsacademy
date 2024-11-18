@@ -1,0 +1,74 @@
+.student-dashboard {
+    width: 80%;
+    margin: auto;
+    text-align: center;
+  }
+  
+  input[type="text"] {
+    padding: 8px;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .course-list {
+    margin-top: 20px;
+  }
+  
+  .course-item {
+    padding: 15px;
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    text-align: left;
+  }
+  
+  .course-link {
+    font-size: 18px;
+    font-weight: bold;
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .course-link:hover {
+    text-decoration: underline;
+  }
+  
+  .teacher-details {
+    font-size: 14px;
+    color: #555;
+    margin-top: 10px;
+  }
+  
+  button {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 10px;
+  }
+  
+  button:hover {
+    background-color: #45a049;
+  }
+  
+  .pagination {
+    margin-top: 20px;
+  }
+  
+  .pagination button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    background-color: #f1f1f1;
+    border: 1px solid #ddd;
+    cursor: pointer;
+  }
+  
+  .pagination button:disabled {
+    background-color: #ddd;
+    cursor: not-allowed;
+  }
+  

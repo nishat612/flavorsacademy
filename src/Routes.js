@@ -8,6 +8,7 @@ import SignUp from './components/signUp/Signup';
 import CourseContent from './components/teacher/courseContent/CourseContent';
 import Course from './components/teacher/course/Course';
 import TeacherDashboard from './components/teacher/dashboard/TeacherDashboard';
+import StudentDashboard from './components/student/dashboard/StudentDashboard';
 import UploadCourse from './components/teacher/uploadCourse/UploadCourse';
 import UploadQuiz from './components/teacher/uploadQuiz/UploadQuiz';
 import UploadVideo from './components/teacher/uploadVideo/UploadVideo';
@@ -23,6 +24,7 @@ const AppRoutes = ({ setRole, setFirstName, firstName,  setUserId, userId, teach
       <Route path="/signup" element={<SignUp />} />
       <Route path="/course" element={<Course userId={userId} teacherId={teacherId}/>} />
       <Route path="/teacherDashboard" element={<TeacherDashboard firstName={firstName} />} />
+      <Route path="/studentDashboard" element={<StudentDashboard firstName={firstName} studentId={userId} />} /> 
       <Route path="/uploadCourse" element={<UploadCourse />} />
       <Route path="/uploadQuiz" element={<UploadQuiz />} />
       <Route path="/uploadVideo" element={<UploadVideo />} />

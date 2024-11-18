@@ -37,7 +37,7 @@ function Login({ setRole, setFirstName, setUserId }) {
         if (response.role === "teacher") {
           navigate('/teacherDashboard'); // Navigate to teacher's dashboard
         } else if (response.role === "student") {
-          navigate('/student/dashboard'); // Navigate to student's dashboard
+          navigate('/studentDashboard'); // Navigate to student's dashboard
         } else {
           setError("Unknown role");
         }
@@ -80,9 +80,9 @@ function Login({ setRole, setFirstName, setUserId }) {
           <button type="submit" className="login-button">Login</button>
         </div>
 
-        <p className="forgot-password">
+        {/* <p className="forgot-password">
           <Link to="/forgotPassword">Forgot Password?</Link>
-        </p>
+        </p> */}
       </form>
       {error && <p className="error-message">{error}</p>}
     </div>
