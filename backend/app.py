@@ -70,7 +70,7 @@ def signup():
     last_name = data.get('lastName')
     role = data.get('role')  # 'student' or 'teacher'
     hashed_password = generate_password_hash(password)
-
+    print("role",role)
     # Insert into role-specific table
     if role == 'student':
         student_id = execute_query(
@@ -82,8 +82,10 @@ def signup():
             (student_id, email, hashed_password)
         )
     elif role == 'teacher':
+        print("inside teacher")
         teacher_id = execute_query(
             "INSERT INTO teacher (firstname, lastname, email) VALUES (%s, %s, %s)",
+            (first_name, last_name, email)
         )
         execute_query(
             "INSERT INTO users (tid, email, password) VALUES (%s, %s, %s)",
