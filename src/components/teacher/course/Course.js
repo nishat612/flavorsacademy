@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { getCoursesForTeacher } from '../../../services/apiService';
 import { useNavigate } from 'react-router-dom';
 import './Course.css';
-
+import { useLocation } from 'react-router-dom';
 function Course({ teacherId: propTeacherId }) {
   const [courses, setCourses] = useState([]);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-
+  const location = useLocation();
   // Retrieve teacherId from prop or localStorage
   const teacherId = propTeacherId || localStorage.getItem('teacherId');
   

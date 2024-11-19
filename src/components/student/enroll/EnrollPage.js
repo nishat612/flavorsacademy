@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { getCourseContent } from '../../../services/apiService';
+import { getCourseContent, enrollInCourse } from '../../../services/apiService';
 import './EnrollPage.css';
 function EnrollPage() {
   const location = useLocation();
-  const { courseId, studentId, teacherId, courseName } = location.state || {}; // Destructure state values
+  const { courseId, studentId, teacherId, courseName, teacherFirstName, teacherLastName, teacherEmail } = location.state || {}; // Destructure state values
 
-  const [syllabasContent, setSyllabasContent] = useState(null);
+  const [syllabusContent, setSyllabusContent] = useState(null);
   const [descriptionContent, setDescriptionContent] = useState(null);
+  const [showToast, setShowToast] = useState(false);
   useEffect(() => {
     if (courseId && teacherId) {
-      // Fetch course content, using both courseId and teacherId
       const fetchContent = async () => {
         try {
           const syllabusResponse = await getCourseContent(courseId, teacherId, 'syllabus');
-          setSyllabasContent(syllabusResponse.content);
+          setSyllabusContent(syllabusResponse.content);
 
           const descriptionResponse = await getCourseContent(courseId, teacherId, 'course description');
           setDescriptionContent(descriptionResponse.content);
@@ -32,35 +32,60 @@ function EnrollPage() {
     return <p>Error: Missing course or teacher information.</p>;
   }
 
-  return (
-    <div>
-      <h1>{courseName }</h1>
-      {descriptionContent ? (
-        <>
-          <h2>Course Description</h2>
-          {descriptionContent.text ? (
-            <p>{descriptionContent.text}</p> // Display description text directly
-          ) : (
-            <p>No course description available.</p>
-          )}
-        </>
-      ) : (
-        <p>Loading description...</p>
-      )}
+  const handleEnroll = async () => {
+    try {
+      const response = await enrollInCourse(courseId, studentId);
+      if (response.message === "Student enrolled successfully") {
+        setShowToast(true); // Show toast on success
+        setTimeout(() => setShowToast(false), 5000); // Hide toast after 5 seconds
+      } else {
+        console.error("Enrollment failed:", response.message);
+      }
+    } catch (error) {
+      console.error("Error enrolling in course:", error);
+    }
+  };
+  const closeToast = () => setShowToast(false);
 
-      {syllabasContent ? (
-        <>
-          <h2>Course Syllabus</h2>
-          {syllabasContent.text ? (
-            <a href={syllabasContent.text} target="_blank" rel="noopener noreferrer">
-              Syllabus
+  return (
+    <div className="enroll-page">
+      <h1 className="course-title">{courseName}</h1>
+
+      <div className="instructor-info">
+        <h2>Instructor Information</h2>
+        <p><strong>Teacher:</strong> {teacherFirstName} {teacherLastName}</p>
+        <p><strong>Email:</strong> {teacherEmail}</p>
+      </div>
+
+      <div className="course-description">
+        <h2>Course Description</h2>
+        {descriptionContent ? (
+          <p>{descriptionContent.text}</p>
+        ) : (
+          <p>Loading description...</p>
+        )}
+      </div>
+
+      <div className="course-syllabus">
+        <h2>Course Syllabus</h2>
+        {syllabusContent ? (
+          syllabusContent.text ? (
+            <a href={syllabusContent.text} target="_blank" rel="noopener noreferrer">
+              View Syllabus
             </a>
           ) : (
             <p>No syllabus available.</p>
-          )}
-        </>
-      ) : (
-        <p>Loading content...</p>
+          )
+        ) : (
+          <p>Loading syllabus...</p>
+        )}
+      </div>
+      <div><button onClick={handleEnroll} className="enroll-button">Enroll</button></div>
+      {showToast && (
+        <div className="toast">
+          <button className="close-button" onClick={closeToast}>×</button>
+          <p>Successfully Enrolled!</p>
+        </div>
       )}
     </div>
   );

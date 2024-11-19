@@ -3,14 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getCourses, enrollInCourse, getTeacherById, getCourseById } from '../../../services/apiService';
 
 function StudentDashboard({ studentId }) {
-  const navigate = useNavigate(); // Define navigate here
+  const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const coursesPerPage = 5;
 
-  // Fetch all courses on component mount
   useEffect(() => {
     fetchCourses();
   }, []);
@@ -28,7 +27,6 @@ function StudentDashboard({ studentId }) {
     }
   };
 
-  // Handle search functionality
   const handleSearch = (e) => {
     const search = e.target.value.toLowerCase();
     setSearchTerm(search);
@@ -39,7 +37,6 @@ function StudentDashboard({ studentId }) {
     setCurrentPage(1);
   };
 
-  // Calculate the courses to display for the current page
   const indexOfLastCourse = currentPage * coursesPerPage;
   const indexOfFirstCourse = indexOfLastCourse - coursesPerPage;
   const currentCourses = Array.isArray(filteredCourses)
@@ -53,24 +50,25 @@ function StudentDashboard({ studentId }) {
     console.log("courseId:", courseId, "teacherId:", teacherId, "Course Name: ", courseName);
     try {
       const course = await getCourseById(courseId);
+      const teacherData = await getTeacherById(teacherId);
+
       if (course.sid && course.sid.includes(studentId)) {
         navigate(`/course/${courseId}`);
       } else {
-        navigate(`/enrollPage/${courseId}`, { state: { courseId, studentId , teacherId, courseName} });
+        navigate(`/enrollPage/${courseId}`, {
+          state: {
+            courseId,
+            studentId,
+            teacherId,
+            courseName,
+            teacherFirstName: teacherData?.firstname,
+            teacherLastName: teacherData?.lastname,
+            teacherEmail: teacherData?.email,
+          },
+        });
       }
     } catch (error) {
       console.error("Error checking enrollment:", error);
-    }
-  };
-
-  const handleEnroll = async (courseId) => {
-    try {
-      const response = await enrollInCourse(courseId, studentId);
-      alert(response.message);
-      fetchCourses();
-    } catch (error) {
-      console.error("Error enrolling in course:", error);
-      alert(error.message || 'Enrollment failed');
     }
   };
 

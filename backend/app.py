@@ -424,26 +424,30 @@ def enroll_student(idcourse):
         return jsonify({"message": "student_id is required"}), 400
 
     try:
-        # Fetch existing student IDs for the course
+        # Fetch the current sid for the course
         course = fetch_data("SELECT sid FROM course WHERE idcourse = %s", (idcourse,))
+        
         if not course:
             return jsonify({"message": "Course not found"}), 404
 
-        # Load and update the 'sid' field
-        sid_list = json.loads(course[0]['sid']) if course[0]['sid'] else []
+        # Check if sid is already populated
+        current_sid = course[0]['sid']
         
-        if student_id in sid_list:
-            return jsonify({"message": "Student already enrolled"}), 400
-        
-        sid_list.append(student_id)
-        updated_sid = json.dumps(sid_list)
-        
-        # Update the course with the new sid list
-        execute_query("UPDATE course SET sid = %s WHERE idcourse = %s", (updated_sid, idcourse))
-        return jsonify({"message": "Student enrolled successfully"}), 200
+        if current_sid:
+            # If sid exists and matches the student ID, prevent duplicate enrollment
+            if current_sid == str(student_id):
+                return jsonify({"message": "Student already enrolled"}), 400
+            else:
+                # Sid already has a value (another student), return success
+                return jsonify({"message": "A new row will be created for this student enrollment."}), 200
+        else:
+            # If sid is empty, add this student as the first enrolled student
+            execute_query("UPDATE course SET sid = %s WHERE idcourse = %s", (student_id, idcourse))
+            return jsonify({"message": "Student enrolled successfully"}), 200
     except Exception as e:
         print(f"Error enrolling student: {e}")
         return jsonify({"message": "Error enrolling student"}), 500
+
 
 # 4. Get teacher details by ID
 @app.route('/api/teachers/<int:tid>', methods=['GET'])

@@ -43,7 +43,6 @@ function Header({ role, setRole, setFirstName, setUserId }) {
           {role === 'teacher' ? (
             <>
               <li><Link to="/course">Your Courses</Link></li>
-              <li><Link to="/uploadQuiz">Upload Quiz</Link></li>
               <li><button onClick={handleLogout} className="logout-button">Logout</button></li>
             </>
           ) : role === 'student' ? (
