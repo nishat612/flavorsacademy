@@ -385,18 +385,26 @@ def handle_course_content():
 def get_courses():
     try:
         query = "SELECT * FROM course"
-        
-        # Pass an empty tuple as `values`
         courses = fetch_data(query, ())
-        
-        # Convert JSON strings in 'sid' to lists or set to an empty list if no data
+
+        # Ensure that `sid` is treated as JSON if it's a string, or set it to an empty list if not available
         for course in courses:
-            course['sid'] = json.loads(course['sid']) if course['sid'] else []  # Set empty list if 'sid' is None or empty string
-        
+            sid = course.get('sid')
+            if isinstance(sid, str):
+                # Parse sid only if it's a valid JSON string
+                try:
+                    course['sid'] = json.loads(sid)
+                except json.JSONDecodeError:
+                    course['sid'] = []
+            else:
+                # If sid is not a string, set it to an empty list or handle it accordingly
+                course['sid'] = [] if sid is None else [sid]
+
         return jsonify(courses), 200
     except Exception as e:
         print(f"Error fetching courses: {e}")
         return jsonify({"message": "Error fetching courses"}), 500
+
 
 
 # 2. Get specific course details by course ID
@@ -404,7 +412,8 @@ def get_courses():
 def get_course(idcourse):
     try:
         query = "SELECT * FROM course WHERE idcourse = %s"
-        course = fetch_data(query, (idcourse,))
+        course = fetch_data(query, (idcourse))
+        print(course)
         if not course:
             return jsonify({"message": "Course not found"}), 404
 
