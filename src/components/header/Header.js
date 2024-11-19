@@ -1,20 +1,29 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './Header.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { Link, useNavigate } from 'react-router-dom';
-import { logout } from '../../services/apiService'; // Import logout function
+import { logout } from '../../services/apiService';
 
 function Header({ role, setRole, setFirstName, setUserId }) {
   const navigate = useNavigate();
+
+  // Retrieve the role from localStorage on component mount
+  useEffect(() => {
+    const savedRole = localStorage.getItem('role');
+    if (savedRole) {
+      setRole(savedRole); // Set the role if it exists in localStorage
+    }
+  }, [setRole]);
 
   const handleLogout = async () => {
     // Call the API to clear the session on the backend
     await logout();
     
-    // Clear user data in the app state
+    // Clear user data in the app state and localStorage
     setRole(null);
     setFirstName('');
     setUserId(null);
+    localStorage.removeItem('role'); // Clear role from localStorage
 
     // Redirect to login page
     navigate('/login');
@@ -22,18 +31,24 @@ function Header({ role, setRole, setFirstName, setUserId }) {
 
   const handleLogoClick = () => {
     if (role === 'teacher') {
-      navigate('/teacherDashboard'); // Navigate to teacher dashboard if role is teacher
-    }if (role === 'student') {
-      navigate('/studentDashboard'); // Navigate to teacher dashboard if role is teacher
-    }
-     else {
-      navigate('/'); // Navigate to homepage otherwise
+      navigate('/teacherDashboard');
+    } else if (role === 'student') {
+      navigate('/studentDashboard');
+    } else {
+      navigate('/');
     }
   };
+
+  // Save the role to localStorage whenever it changes
+  useEffect(() => {
+    if (role) {
+      localStorage.setItem('role', role);
+    }
+  }, [role]);
+
   return (
     <header className="App-header">
       <nav className="nav-left">
-        {/* Use onClick instead of Link to conditionally navigate */}
         <div className="logo-link" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
           <h2 className="logo"><i className="fas fa-utensils logo-icon"></i> Flavors Academy</h2>
         </div>
@@ -47,7 +62,7 @@ function Header({ role, setRole, setFirstName, setUserId }) {
             </>
           ) : role === 'student' ? (
             <>
-              <li><Link to="/studentCourses">Your Courses</Link></li> 
+              <li><Link to="/studentCourses">Your Courses</Link></li>
               <li><button onClick={handleLogout} className="logout-button">Logout</button></li>
             </>
           ) : (
