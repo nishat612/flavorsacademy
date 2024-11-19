@@ -198,7 +198,7 @@ def get_course_content():
     course_id = request.args.get('courseId')
     teacher_id = request.args.get('teacherId')
     content_name = request.args.get('courseContent')
-  
+    print(course_id, teacher_id, content_name)
     if not course_id or not teacher_id:
         return jsonify({"message": "Course ID and Teacher ID are required"}), 400
 
@@ -207,9 +207,7 @@ def get_course_content():
         WHERE cid = %s AND tid = %s AND content_name = %s
     """
     content = fetch_data(query, (course_id, teacher_id, content_name))
-    if(content_name == 'syllabus'):
-
-        print("cid, tid, cc, content", course_id, teacher_id, content_name, content)
+    print(content)
     if content:
         return jsonify({"content": content[0]})
     else:
@@ -466,6 +464,13 @@ def get_teacher(tid):
     except Exception as e:
         print(f"Error fetching teacher details: {e}")
         return jsonify({"message": "Error fetching teacher details"}), 500
+    
+
+
+
+
+
+
 
 
 if __name__ == '__main__':

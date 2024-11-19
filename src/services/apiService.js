@@ -97,6 +97,7 @@ export const getAllCourseContent = async (courseId, teacherId) => {
 
 export const getCourseContent = async (courseId, teacherId, courseContent) => {
   try {
+    console.log(courseId, teacherId, courseContent)
     const response = await fetch(`/courseContent?courseId=${courseId}&teacherId=${teacherId}&courseContent=${courseContent}`, {
       method: 'GET',
       headers: {
@@ -104,6 +105,7 @@ export const getCourseContent = async (courseId, teacherId, courseContent) => {
       },
       credentials: 'include'
     });
+   
     return response.json();
   } catch (error) {
     console.error("Error fetching course content:", error);
@@ -237,6 +239,7 @@ export const getCourses = async () => {
 // Function to get a specific course by ID
 export const getCourseById = async (courseId) => {
   try {
+    console.log(courseId)
     const response = await fetch(`/api/courses/${courseId}`, {
       method: 'GET',
       headers: {
@@ -296,3 +299,4 @@ export const getTeacherById = async (teacherId) => {
     return "";
   }
 };
+

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { getCourses, enrollInCourse, getTeacherById } from '../../../services/apiService';
+import { Link, useNavigate } from 'react-router-dom';
+import { getCourses, enrollInCourse, getTeacherById, getCourseById } from '../../../services/apiService';
 
 function StudentDashboard({ studentId }) {
-  const [courses, setCourses] = useState([]); // Initialize as an empty array
-  const [filteredCourses, setFilteredCourses] = useState([]); // Initialize as an empty array
+  const navigate = useNavigate(); // Define navigate here
+  const [courses, setCourses] = useState([]);
+  const [filteredCourses, setFilteredCourses] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const coursesPerPage = 5;
@@ -14,17 +15,16 @@ function StudentDashboard({ studentId }) {
     fetchCourses();
   }, []);
 
-  // Fetch courses from the API
   const fetchCourses = async () => {
     try {
       const data = await getCourses();
-      const validData = Array.isArray(data) ? data : []; // Ensure data is an array
+      const validData = Array.isArray(data) ? data : [];
       setCourses(validData);
-      setFilteredCourses(validData); // Initialize with all courses as an array
+      setFilteredCourses(validData);
     } catch (error) {
       console.error("Error fetching courses:", error);
-      setCourses([]); // Fallback to an empty array in case of error
-      setFilteredCourses([]); // Fallback to an empty array in case of error
+      setCourses([]);
+      setFilteredCourses([]);
     }
   };
 
@@ -36,7 +36,7 @@ function StudentDashboard({ studentId }) {
       course.name.toLowerCase().includes(search)
     );
     setFilteredCourses(filtered);
-    setCurrentPage(1); // Reset to first page on new search
+    setCurrentPage(1);
   };
 
   // Calculate the courses to display for the current page
@@ -44,18 +44,30 @@ function StudentDashboard({ studentId }) {
   const indexOfFirstCourse = indexOfLastCourse - coursesPerPage;
   const currentCourses = Array.isArray(filteredCourses)
     ? filteredCourses.slice(indexOfFirstCourse, indexOfLastCourse)
-    : []; // Ensure it's an array before calling .slice()
+    : [];
 
-  // Handle pagination
-  const totalPages = Math.ceil((filteredCourses.length || 0) / coursesPerPage); // Fallback length to 0
+  const totalPages = Math.ceil((filteredCourses.length || 0) / coursesPerPage);
   const handlePageChange = (page) => setCurrentPage(page);
 
-  // Enroll student in a course
+  const handleEnrollClick = async (courseId, teacherId, courseName) => {
+    console.log("courseId:", courseId, "teacherId:", teacherId, "Course Name: ", courseName);
+    try {
+      const course = await getCourseById(courseId);
+      if (course.sid && course.sid.includes(studentId)) {
+        navigate(`/course/${courseId}`);
+      } else {
+        navigate(`/enrollPage/${courseId}`, { state: { courseId, studentId , teacherId, courseName} });
+      }
+    } catch (error) {
+      console.error("Error checking enrollment:", error);
+    }
+  };
+
   const handleEnroll = async (courseId) => {
     try {
       const response = await enrollInCourse(courseId, studentId);
-      alert(response.message); // Show success or error message from the API
-      fetchCourses(); // Refresh the course list to reflect enrollment status
+      alert(response.message);
+      fetchCourses();
     } catch (error) {
       console.error("Error enrolling in course:", error);
       alert(error.message || 'Enrollment failed');
@@ -74,20 +86,19 @@ function StudentDashboard({ studentId }) {
       <div className="course-list">
         {currentCourses.map((course) => (
           <div key={course.idcourse} className="course-item">
-            
-              <h3>{course.name}</h3>
-            
+            <h3>{course.name}</h3>
             <TeacherDetails teacherId={course.tid} />
-            <button onClick={() => handleEnroll(course.idcourse)}>Enroll</button>
+            <button onClick={() => handleEnrollClick(course.idcourse, course.tid, course.name)}>Enroll</button>
           </div>
         ))}
       </div>
       <div className="pagination">
         {Array.from({ length: totalPages }, (_, index) => (
-          <button style={{margin:"5px"}}
+          <button
             key={index + 1}
             onClick={() => handlePageChange(index + 1)}
             disabled={currentPage === index + 1}
+            style={{ margin: "5px" }}
           >
             {index + 1}
           </button>
