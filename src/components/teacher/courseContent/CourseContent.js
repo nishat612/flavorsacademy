@@ -6,10 +6,11 @@ import UploadModal from './UploadModal';
 import AddContentModal from './AddContentModal';
 
 function CourseContent() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { courseId, teacherId, courseName } = location.state || {};
+  const location = useLocation(); // Access location state for course details
+  const navigate = useNavigate(); // Navigation hook for routing
+  const { courseId, teacherId, courseName } = location.state || {}; // Extract course info from state
 
+  // State variables for managing course content, syllabus, and UI interactions
   const [syllabusUrl, setSyllabusUrl] = useState('');
   const [fileName, setFileName] = useState('');
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -18,12 +19,12 @@ function CourseContent() {
   const [showModal, setShowModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
 
-  // New states for course content management
-  const [courseContents, setCourseContents] = useState([]); // Store course content as JSON blocks
-  const [showAddContentModal, setShowAddContentModal] = useState(false); // Control add/edit modal visibility
-  const [editingContent, setEditingContent] = useState(null); // Store content being edited
+  // States for course content management
+  const [courseContents, setCourseContents] = useState([]); // Holds JSON blocks of course content
+  const [showAddContentModal, setShowAddContentModal] = useState(false); // Controls add/edit modal visibility
+  const [editingContent, setEditingContent] = useState(null); // Stores content block being edited
 
-  // Fetch all course-related data
+  // Fetches syllabus, course description, and course content data from the server
   const fetchData = useCallback(async () => {
     if (!courseId || !teacherId) {
       console.error("courseId or teacherId is undefined");
@@ -31,11 +32,11 @@ function CourseContent() {
     }
 
     try {
-      // Fetch syllabus file path if it exists
+      // Fetch syllabus URL if it exists
       const syllabusResponse = await getSyllabus(courseId, teacherId);
       if (syllabusResponse?.fileUrl) {
         setSyllabusUrl(syllabusResponse.fileUrl);
-        setFileName('Syllabus'); // Set a default name for the file link
+        setFileName('Syllabus'); // Default name for syllabus file
       } else {
         setSyllabusUrl('');
         setFileName('');
@@ -47,14 +48,12 @@ function CourseContent() {
         setDescription(descriptionResponse.content.text || '');
       }
 
-      // Fetch the course content JSON blocks
+      // Fetch JSON blocks for course content
       const contentResponse = await getCourseContentData(courseId, teacherId);
 
       if (contentResponse?.contentData) {
-        // Flatten the content data to ensure it's a single-level array
+        // Flatten nested content data and remove duplicates based on `contentNo`
         const flattenedContentData = contentResponse.contentData.flat(Infinity);
-  
-        // Remove duplicates based on `contentNo`
         const uniqueContentData = flattenedContentData.reduce((acc, current) => {
           const duplicate = acc.find((item) => item.contentNo === current.contentNo);
           if (!duplicate) {
@@ -62,8 +61,8 @@ function CourseContent() {
           }
           return acc;
         }, []);
-  
-        // Set unique content data to the state
+
+        // Set unique content data to state
         setCourseContents(uniqueContentData);
         console.log("Updated course contents with unique data:", uniqueContentData);
       }
@@ -73,68 +72,74 @@ function CourseContent() {
     }
   }, [courseId, teacherId]);
 
+  // Run fetchData on initial render and when courseId or teacherId changes
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
+  // Opens the modal to add a new course description
   const handleAddDescription = () => {
     setIsEdit(false);
     setShowModal(true);
   };
 
+  // Opens the modal to edit the existing course description
   const handleEditDescription = () => {
     setIsEdit(true);
     setShowModal(true);
   };
 
+  // Closes the description modal
   const handleModalClose = () => {
     setShowModal(false);
   };
 
+  // Saves the course description to the database
   const handleSaveDescription = async () => {
     await saveCourseDescription(courseId, teacherId, description);
     setShowModal(false);
   };
 
+  // Updates the syllabus URL in the state and database after file upload
   const handleUploadComplete = async (url, name) => {
     setSyllabusUrl(url);
     setFileName(name);
     setSuccessMessage("File uploaded successfully!");
 
-    // Save or update the syllabus URL in the database
+    // Save the syllabus URL in the database
     await saveSyllabus({
       courseId,
       teacherId,
       fileUrl: url,
     });
 
-    // Clear the success message after 5 seconds
+    // Clear success message after 5 seconds
     setTimeout(() => setSuccessMessage(''), 5000);
   };
 
-  // Handle opening the add content modal
+  // Opens the modal to add new course content
   const handleAddContent = () => {
-    setEditingContent(null); // Reset to add new content
+    setEditingContent(null); // Reset editing content to add new content
     setShowAddContentModal(true);
   };
 
-  // Handle editing an existing content block
+  // Opens the modal to edit an existing content block
   const handleEditContent = (content) => {
-    setEditingContent(content); // Set content to be edited
+    setEditingContent(content); // Set content block to be edited
     setShowAddContentModal(true);
   };
 
-  // Save or update course content JSON block
+  // Saves or updates a course content JSON block in state and database
   const handleSaveContent = async (newContent) => {
-    // Update the state immediately with a callback to avoid race conditions
     setCourseContents((prevContents) => {
+      // If editing, update the content, otherwise add new content
       const updatedContents = editingContent
         ? prevContents.map((content) =>
             content.contentNo === editingContent.contentNo ? newContent : content
           )
         : [...prevContents, newContent];
   
-      // Save updated contents to the database after updating the state
+      // Save updated contents to the database
       saveCourseContentData({
         courseId,
         teacherId,
@@ -145,17 +150,16 @@ function CourseContent() {
       return updatedContents;
     });
   
-    // Re-fetch data to ensure it's fully up-to-date (optional depending on sync needs)
+    // Re-fetch data to ensure it’s up-to-date (optional)
     fetchData();
-    setShowAddContentModal(false); // Close modal
+    setShowAddContentModal(false); // Close the content modal
   };
   
-
-
-
   return (
     <div className="course-content-container">
       <h1>{courseName}</h1>
+      
+      {/* Course Description Section */}
       <h2>Course Description</h2>
       {description ? (
         <div>
@@ -166,6 +170,7 @@ function CourseContent() {
         <button onClick={handleAddDescription}>Add Description</button>
       )}
       
+      {/* Modal for adding/editing course description */}
       {showModal && (
         <div className="modal">
           <div className="modal-content">
@@ -183,6 +188,7 @@ function CourseContent() {
         </div>
       )}
   
+      {/* Syllabus Section */}
       <h2>Syllabus</h2>
       {syllabusUrl ? (
         <p>
@@ -196,6 +202,8 @@ function CourseContent() {
       <button onClick={() => setShowUploadModal(true)}>
         {syllabusUrl ? "Replace Syllabus" : "Upload Syllabus"}
       </button>
+
+      {/* Upload modal for syllabus */}
       {showUploadModal && (
         <UploadModal
           onClose={() => setShowUploadModal(false)}
@@ -214,6 +222,7 @@ function CourseContent() {
           <h3>{content.title || 'No Title Available'}</h3>
           <p>{content.subtitle || 'No Subtitle Available'}</p>
           
+          {/* Conditional links for downloadable content */}
           {content.fileUrl && (
             <div>
               <a href={content.fileUrl} target="_blank" rel="noopener noreferrer" className="link-button">
@@ -230,21 +239,20 @@ function CourseContent() {
             </div>
           )}
 
-
           {content.assignmentUrl && (
-                      <div>
-                        <a href={content.assignmentUrl} target="_blank" rel="noopener noreferrer" className="link-button"> 
-                          Assignment 
-                        </a>
-                      </div>
-                    )}
+            <div>
+              <a href={content.assignmentUrl} target="_blank" rel="noopener noreferrer" className="link-button"> 
+                Assignment 
+              </a>
+            </div>
+          )}
           
+          {/* Edit button for each content block */}
           <button onClick={() => handleEditContent(content)}>Edit</button>
         </div>
       ))}
 
-
-
+      {/* Add/Edit Content Modal */}
       {showAddContentModal && (
         <AddContentModal
           onClose={() => setShowAddContentModal(false)}

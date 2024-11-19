@@ -9,7 +9,7 @@ export const signup = async (userData) => {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(userData)
+      body: JSON.stringify(userData)  // Send user data in JSON format
     });
     return response.json();
   } catch (error) {
@@ -25,8 +25,8 @@ export const login = async (credentials) => {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(credentials),
-      credentials: 'include'  // Important to include cookies in CORS requests
+      body: JSON.stringify(credentials),  // Send login credentials
+      credentials: 'include'  // Include cookies for session management
     });
     return response.json();
   } catch (error) {
@@ -34,12 +34,12 @@ export const login = async (credentials) => {
   }
 };
 
-// Function to get user info from session
+// Function to retrieve user information from session
 export const getUserInfo = async () => {
   try {
     const response = await fetch('http://localhost:3000/get_user_info', {
       method: 'GET',
-      credentials: 'include',  // Make sure cookies are sent
+      credentials: 'include',  // Ensure cookies are sent for session-based requests
       headers: {
         'Content-Type': 'application/json',
       },
@@ -50,13 +50,12 @@ export const getUserInfo = async () => {
   }
 };
 
-
 // Function to log out and clear the session
 export const logout = async () => {
   try {
     const response = await fetch('/logout', {
       method: 'POST',
-      credentials: 'include'  // Important for session-based logout
+      credentials: 'include'  // Include session credentials
     });
     return response.json();
   } catch (error) {
@@ -64,7 +63,7 @@ export const logout = async () => {
   }
 };
 
-// Function to get courses for a specific teacher
+// Function to fetch courses for a specific teacher
 export const getCoursesForTeacher = async () => {
   try {
     const response = await fetch(`/course`, {
@@ -72,7 +71,7 @@ export const getCoursesForTeacher = async () => {
       headers: {
         'Content-Type': 'application/json'
       },
-      credentials: 'include'  // Include cookies for session handling
+      credentials: 'include'  // Include cookies to maintain session
     });
     return response.json();
   } catch (error) {
@@ -80,6 +79,7 @@ export const getCoursesForTeacher = async () => {
   }
 };
 
+// Function to fetch all content for a specific course and teacher
 export const getAllCourseContent = async (courseId, teacherId) => {
   try {
     const response = await fetch(`/get_course_content?courseId=${courseId}&teacherId=${teacherId}`, {
@@ -87,7 +87,7 @@ export const getAllCourseContent = async (courseId, teacherId) => {
       headers: {
         'Content-Type': 'application/json'
       },
-      credentials: 'include'  // Include credentials if session handling is involved
+      credentials: 'include'  // Include credentials for session handling
     });
     return response.json();
   } catch (error) {
@@ -95,9 +95,10 @@ export const getAllCourseContent = async (courseId, teacherId) => {
   }
 };
 
+// Function to fetch specific course content by course ID, teacher ID, and content name
 export const getCourseContent = async (courseId, teacherId, courseContent) => {
   try {
-    console.log(courseId, teacherId, courseContent)
+    console.log(courseId, teacherId, courseContent);
     const response = await fetch(`/courseContent?courseId=${courseId}&teacherId=${teacherId}&courseContent=${courseContent}`, {
       method: 'GET',
       headers: {
@@ -105,16 +106,13 @@ export const getCourseContent = async (courseId, teacherId, courseContent) => {
       },
       credentials: 'include'
     });
-   
     return response.json();
   } catch (error) {
     console.error("Error fetching course content:", error);
   }
 };
 
-
-
-// Save or update course description
+// Function to save or update a course description
 export const saveCourseDescription = async (courseId, teacherId, description) => {
   try {
     const response = await fetch('/courseContent', {
@@ -131,6 +129,7 @@ export const saveCourseDescription = async (courseId, teacherId, description) =>
   }
 };
 
+// Function to save general course content with optional file name
 export const saveCourseContent = async ({ courseId, teacherId, contentName, text, fileName }) => {
   try {
     const response = await fetch('/courseContent', {
@@ -147,7 +146,7 @@ export const saveCourseContent = async ({ courseId, teacherId, contentName, text
   }
 };
 
-// Existing POST function to save syllabus
+// Function to save syllabus file for a specific course and teacher
 export const saveSyllabus = async ({ courseId, teacherId, fileUrl }) => {
   try {
     const response = await fetch('/syllabus', {
@@ -163,7 +162,7 @@ export const saveSyllabus = async ({ courseId, teacherId, fileUrl }) => {
   }
 };
 
-// New GET function to fetch syllabus file path
+// Function to fetch syllabus file path for a course
 export const getSyllabus = async (courseId, teacherId) => {
   try {
     const response = await fetch(`/syllabus?courseId=${courseId}&teacherId=${teacherId}`, {
@@ -178,18 +177,16 @@ export const getSyllabus = async (courseId, teacherId) => {
   }
 };
 
-// services/apiService.js
-
-// Function to retrieve existing course content JSON data from the handle_course_content endpoint
+// Function to retrieve existing course content JSON data
 export const getCourseContentData = async (courseId, teacherId) => {
   try {
-    console.log(courseId, teacherId )
+    console.log(courseId, teacherId);
     const response = await fetch(`/courseContentHandler?courseId=${courseId}&teacherId=${teacherId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include', // Include credentials if session handling is involved
+      credentials: 'include',
     });
     return response.json();
   } catch (error) {
@@ -197,7 +194,7 @@ export const getCourseContentData = async (courseId, teacherId) => {
   }
 };
 
-// Function to save or update course content JSON data to the handle_course_content endpoint
+// Function to save or update JSON data for course content
 export const saveCourseContentData = async ({ courseId, teacherId, contentName, contentData }) => {
   try {
     const response = await fetch('/courseContentHandler', {
@@ -209,8 +206,8 @@ export const saveCourseContentData = async ({ courseId, teacherId, contentName, 
       body: JSON.stringify({ 
         courseId, 
         teacherId, 
-        contentName: contentName || 'course content',  // Default to 'course content' if not provided
-        content: contentData  // Pass the course content data
+        contentName: contentName || 'course content',  // Default to 'course content' if not specified
+        content: contentData  // Send course content data
       }),
     });
     return response.json();
@@ -219,10 +216,10 @@ export const saveCourseContentData = async ({ courseId, teacherId, contentName, 
   }
 };
 
-// Function to get all courses
+// Function to get all available courses
 export const getCourses = async () => {
   try {
-    console.log("inside get course")
+    console.log("inside get course");
     const response = await fetch('/api/courses', {
       method: 'GET',
       headers: {
@@ -236,10 +233,10 @@ export const getCourses = async () => {
   }
 };
 
-// Function to get a specific course by ID
+// Function to fetch course details by specific course ID
 export const getCourseById = async (courseId) => {
   try {
-    console.log(courseId)
+    console.log(courseId);
     const response = await fetch(`/api/courses/${courseId}`, {
       method: 'GET',
       headers: {
@@ -262,7 +259,7 @@ export const enrollInCourse = async (courseId, studentId) => {
         'Content-Type': 'application/json'
       },
       credentials: 'include',
-      body: JSON.stringify({ student_id: studentId })
+      body: JSON.stringify({ student_id: studentId })  // Send student ID in request body
     });
     return response.json();
   } catch (error) {
@@ -270,10 +267,10 @@ export const enrollInCourse = async (courseId, studentId) => {
   }
 };
 
-// Function to get teacher details by ID
+// Function to get teacher details by teacher ID
 export const getTeacherById = async (teacherId) => {
   if (!teacherId) {
-    // If teacherId is null, undefined, or 0, return an empty string immediately
+    // If teacherId is not valid, return an empty string
     return "";
   }
 
@@ -287,24 +284,20 @@ export const getTeacherById = async (teacherId) => {
     });
 
     if (response.ok) {
-      // If the response is successful, return the JSON data
-      return await response.json();
+      return await response.json();  // Return teacher details if successful
     } else {
-      // If the teacher is not found, return an empty string
-      return "";
+      return "";  // Return empty string if teacher not found
     }
   } catch (error) {
     console.error("Error fetching teacher details:", error);
-    // Return an empty string in case of an error
     return "";
   }
 };
 
-// services/apiService.js
-
+// Function to get courses that a student is enrolled in
 export const getEnrolledCourses = async (studentId) => {
   try {
-    console.log(studentId)
+    console.log(studentId);
     const response = await fetch(`/api/enrolled_courses/${studentId}`, {
       method: 'GET',
       headers: {
@@ -313,7 +306,7 @@ export const getEnrolledCourses = async (studentId) => {
       credentials: 'include',
     });
     if (response.ok) {
-      return response.json(); // Return the enrolled courses data
+      return response.json(); // Return enrolled courses data
     } else {
       console.error("Failed to fetch enrolled courses");
       return [];
@@ -324,6 +317,7 @@ export const getEnrolledCourses = async (studentId) => {
   }
 };
 
+// Function to retrieve teacher details for a given teacher ID
 export const getTeacherDetails = async (teacherId) => {
   try {
     const response = await fetch(`/api/teachers/${teacherId}`, {

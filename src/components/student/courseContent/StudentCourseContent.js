@@ -3,27 +3,31 @@ import { useLocation } from 'react-router-dom';
 import { getCourseContentData, getTeacherDetails, getCourseContent } from '../../../services/apiService';
 import './StudentCourseContent.css';
 
+// Component for displaying course content and instructor information for students
 function StudentCourseContent() {
-  const location = useLocation();
-  const { courseId, teacherId, courseName } = location.state || {};
+  const location = useLocation(); // Access location state for course details
+  const { courseId, teacherId, courseName } = location.state || {}; // Destructure course and teacher details from state
+
+  // State variables to store course content, teacher information, and course description
   const [courseContents, setCourseContents] = useState([]);
   const [teacher, setTeacher] = useState(null);
   const [courseDescription, setCourseDescription] = useState('');
 
+  // Fetch course content, teacher details, and course description on component mount
   useEffect(() => {
     const fetchContent = async () => {
+      // Ensure courseId and teacherId are provided
       if (!courseId || !teacherId) {
         console.error("Course ID or Teacher ID is missing");
         return;
       }
       try {
+        // Fetch course content data
         const contentResponse = await getCourseContentData(courseId, teacherId);
 
         if (contentResponse?.contentData) {
-          // Flatten the content data to ensure it's a single-level array
+          // Flatten nested content data and remove duplicates based on `contentNo`
           const flattenedContentData = contentResponse.contentData.flat(Infinity);
-
-          // Remove duplicates based on `contentNo`
           const uniqueContentData = flattenedContentData.reduce((acc, current) => {
             const duplicate = acc.find((item) => item.contentNo === current.contentNo);
             if (!duplicate) {
@@ -32,17 +36,18 @@ function StudentCourseContent() {
             return acc;
           }, []);
 
-          // Set unique content data to the state
+          // Update state with unique course content data
           setCourseContents(uniqueContentData);
           console.log("Updated course contents with unique data:", uniqueContentData);
         }
 
+        // Fetch teacher details
         const teacherResponse = await getTeacherDetails(teacherId);
         if (teacherResponse) {
           setTeacher(teacherResponse);
         }
 
-        // Fetch course description
+        // Fetch course description content
         const descriptionResponse = await getCourseContent(courseId, teacherId, 'course description');
         if (descriptionResponse && descriptionResponse.content) {
           setCourseDescription(descriptionResponse.content.text || 'No description available');
@@ -51,9 +56,10 @@ function StudentCourseContent() {
         console.error("Error fetching course data:", error);
       }
     };
-    fetchContent();
+    fetchContent(); // Call fetchContent to retrieve data
   }, [courseId, teacherId]);
 
+  // Helper function to extract and decode file name from a URL
   const extractFileName = (url) => {
     return url ? decodeURIComponent(url.split('/').pop().split('?')[0]) : '';
   };
@@ -62,6 +68,7 @@ function StudentCourseContent() {
     <div className="student-course-content-container">
       <h1>{courseName || 'Course Name Unavailable'}</h1>
 
+      {/* Display teacher information if available */}
       {teacher && (
         <div className="teacher-info">
           <h2>Instructor Information</h2>
@@ -70,9 +77,11 @@ function StudentCourseContent() {
         </div>
       )}
 
+      {/* Display course description */}
       <h2>Course Description</h2>
       <p>{courseDescription}</p>
 
+      {/* Display course content items if available */}
       <h2>Course Content</h2>
       {courseContents.length > 0 ? (
         courseContents.map((content, index) => (
@@ -81,6 +90,7 @@ function StudentCourseContent() {
             <p><strong>Title: </strong> {content.title || 'Untitled'}</p>
             <p><strong>Subtitle: </strong> {content.subtitle || 'No subtitle available'}</p>
             
+            {/* Display file link if available */}
             {content.fileUrl && (
               <p><strong>File: </strong> 
                 <a href={content.fileUrl} target="_blank" rel="noopener noreferrer">
@@ -89,6 +99,7 @@ function StudentCourseContent() {
               </p>
             )}
             
+            {/* Display video link if available */}
             {content.videoUrl && (
               <p><strong>Video: </strong> 
                 <a href={content.videoUrl} target="_blank" rel="noopener noreferrer">
@@ -97,6 +108,7 @@ function StudentCourseContent() {
               </p>
             )}
 
+            {/* Display assignment link if available */}
             {content.assignmentUrl && (
               <p><strong>Assignment: </strong> 
                 <a href={content.assignmentUrl} target="_blank" rel="noopener noreferrer">
@@ -107,7 +119,7 @@ function StudentCourseContent() {
           </div>
         ))
       ) : (
-        <p>No course content available.</p>
+        <p>No course content available.</p> // Display if no course content found
       )}
     </div>
   );
