@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { getCourseContent, enrollInCourse } from '../../../services/apiService';
 import './EnrollPage.css';
+
 function EnrollPage() {
   const location = useLocation();
-  const { courseId, studentId, teacherId, courseName, teacherFirstName, teacherLastName, teacherEmail } = location.state || {}; // Destructure state values
-
+  const navigate = useNavigate();
+  const { courseId, studentId, teacherId, courseName, teacherFirstName, teacherLastName, teacherEmail } = location.state || {};
+  
   const [syllabusContent, setSyllabusContent] = useState(null);
   const [descriptionContent, setDescriptionContent] = useState(null);
-  const [showToast, setShowToast] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showFailureToast, setShowFailureToast] = useState(false);
+
   useEffect(() => {
     if (courseId && teacherId) {
       const fetchContent = async () => {
@@ -28,24 +32,28 @@ function EnrollPage() {
     }
   }, [courseId, teacherId]);
 
-  if (!courseId || !teacherId) {
-    return <p>Error: Missing course or teacher information.</p>;
-  }
-
   const handleEnroll = async () => {
     try {
       const response = await enrollInCourse(courseId, studentId);
       if (response.message === "Student enrolled successfully") {
-        setShowToast(true); // Show toast on success
-        setTimeout(() => setShowToast(false), 5000); // Hide toast after 5 seconds
+        setShowSuccessToast(true);
+        setTimeout(() => setShowSuccessToast(false), 5000);
+        navigate('/studentCourseContent', { state: { courseId, teacherId, courseName } });
+      } else if (response.message === "Student already enrolled") {
+        setShowFailureToast(true);
+        setTimeout(() => setShowFailureToast(false), 5000);
       } else {
+        setShowFailureToast(true);
+        setTimeout(() => setShowFailureToast(false), 5000);
         console.error("Enrollment failed:", response.message);
+       
       }
     } catch (error) {
       console.error("Error enrolling in course:", error);
+      setShowFailureToast(true);
+      setTimeout(() => setShowFailureToast(false), 5000);
     }
   };
-  const closeToast = () => setShowToast(false);
 
   return (
     <div className="enroll-page">
@@ -80,11 +88,20 @@ function EnrollPage() {
           <p>Loading syllabus...</p>
         )}
       </div>
+
       <div><button onClick={handleEnroll} className="enroll-button">Enroll</button></div>
-      {showToast && (
-        <div className="toast">
-          <button className="close-button" onClick={closeToast}>×</button>
+
+      {showSuccessToast && (
+        <div className="toast toast-success">
+          <button className="close-button" onClick={() => setShowSuccessToast(false)}>×</button>
           <p>Successfully Enrolled!</p>
+        </div>
+      )}
+
+      {showFailureToast && (
+        <div className="toast toast-warning">
+          <button className="close-button" onClick={() => setShowFailureToast(false)}>×</button>
+          <p>Already enrolled in this course!</p>
         </div>
       )}
     </div>

@@ -54,12 +54,13 @@ function Course({ teacherId: propTeacherId }) {
           <ol className="course-list">
             {courses.map((course) => (
               <li key={course.idcourse} className="course-item">
-                <button
+                <a
                   onClick={() => handleCourseClick(course)}
-                  style={{ background: 'none', border: 'none', color: '#007bff', cursor: 'pointer', textDecoration: 'underline' }}
+                  className="course-link"
+                  href="#"
                 >
                   {course.name}
-                </button>
+                </a>
               </li>
             ))}
           </ol>

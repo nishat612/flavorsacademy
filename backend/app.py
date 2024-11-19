@@ -70,7 +70,7 @@ def signup():
     last_name = data.get('lastName')
     role = data.get('role')  # 'student' or 'teacher'
     hashed_password = generate_password_hash(password)
-    print("role",role)
+    
     # Insert into role-specific table
     if role == 'student':
         student_id = execute_query(
@@ -82,7 +82,6 @@ def signup():
             (student_id, email, hashed_password)
         )
     elif role == 'teacher':
-        print("inside teacher")
         teacher_id = execute_query(
             "INSERT INTO teacher (firstname, lastname, email) VALUES (%s, %s, %s)",
             (first_name, last_name, email)
@@ -166,7 +165,7 @@ def get_courses_for_teacher():
 
     try:
         # Fetch courses associated with the given teacher ID
-        print(teacher_id)
+        
         query = """
             SELECT idcourse, name
             FROM course
@@ -184,7 +183,6 @@ def get_courses_for_teacher():
 def get_all_course_content():
     course_id = request.args.get('courseId')
     teacher_id = request.args.get('teacherId')
-    print("course id, teacher id", course_id, teacher_id)
     try:
         query = "SELECT * FROM course_content"
         content_data = fetch_data(query, ())
@@ -198,7 +196,6 @@ def get_course_content():
     course_id = request.args.get('courseId')
     teacher_id = request.args.get('teacherId')
     content_name = request.args.get('courseContent')
-    print(course_id, teacher_id, content_name)
     if not course_id or not teacher_id:
         return jsonify({"message": "Course ID and Teacher ID are required"}), 400
 
@@ -207,7 +204,7 @@ def get_course_content():
         WHERE cid = %s AND tid = %s AND content_name = %s
     """
     content = fetch_data(query, (course_id, teacher_id, content_name))
-    print(content)
+   
     if content:
         return jsonify({"content": content[0]})
     else:
@@ -225,7 +222,6 @@ def save_course_content():
     teacher_id = data.get('teacherId')
     content_name = data.get('contentName')
     text = data.get('text')
-    print("cid, tid, cc, content", course_id, teacher_id, content_name, text)
     if not course_id or not teacher_id:
         return jsonify({"message": "Course ID and Teacher ID are required"}), 400
 
@@ -315,7 +311,7 @@ def handle_syllabus():
 def handle_course_content():
     course_id = request.args.get('courseId') if request.method == 'GET' else request.json.get('courseId')
     teacher_id = request.args.get('teacherId') if request.method == 'GET' else request.json.get('teacherId')
-    print("sdfhaiurehf", course_id ,  teacher_id)
+    
     content_name = 'course content'
      
     if not course_id or not teacher_id:
@@ -413,7 +409,7 @@ def get_course(idcourse):
     try:
         query = "SELECT * FROM course WHERE idcourse = %s"
         course = fetch_data(query, (idcourse))
-        print(course)
+       
         if not course:
             return jsonify({"message": "Course not found"}), 404
 
@@ -480,9 +476,25 @@ def get_teacher(tid):
     
 
 
+@app.route('/api/enrolled_courses/<int:student_id>', methods=['GET'])
+def get_enrolled_courses(student_id):
+    try:
+        # Assuming you are fetching the courses from the 'courses' table
+        query = "SELECT * FROM course WHERE sid = %s"
+        courses = fetch_data(query, (student_id,))
 
-
-
+        if courses:
+            # Convert courses to JSON format if it isn't already
+            for course in courses:
+                # Check if course data is JSON compatible and modify as needed
+                course['sid'] = str(course['sid']) if isinstance(course['sid'], int) else course['sid']
+            
+            return jsonify(courses), 200
+        else:
+            return jsonify({"message": "No courses found for this student."}), 404
+    except Exception as e:
+        print(f"Error fetching enrolled courses: {e}")
+        return jsonify({"message": "Error fetching enrolled courses"}), 500
 
 
 

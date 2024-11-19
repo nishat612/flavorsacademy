@@ -300,3 +300,41 @@ export const getTeacherById = async (teacherId) => {
   }
 };
 
+// services/apiService.js
+
+export const getEnrolledCourses = async (studentId) => {
+  try {
+    console.log(studentId)
+    const response = await fetch(`/api/enrolled_courses/${studentId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+    if (response.ok) {
+      return response.json(); // Return the enrolled courses data
+    } else {
+      console.error("Failed to fetch enrolled courses");
+      return [];
+    }
+  } catch (error) {
+    console.error("Error fetching enrolled courses:", error);
+    return [];
+  }
+};
+
+export const getTeacherDetails = async (teacherId) => {
+  try {
+    const response = await fetch(`/api/teachers/${teacherId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include'
+    });
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching teacher details:", error);
+  }
+};

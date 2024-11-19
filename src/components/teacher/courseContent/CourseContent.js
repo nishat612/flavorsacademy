@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { getCourseContentData, getCourseContent, saveCourseContentData, saveCourseDescription, getSyllabus, saveSyllabus } from '../../../services/apiService';
 import './CourseContent.css';
-import { useLocation, useNavigate, Link, } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import UploadModal from './UploadModal';
 import AddContentModal from './AddContentModal';
 
@@ -186,7 +186,7 @@ function CourseContent() {
       <h2>Syllabus</h2>
       {syllabusUrl ? (
         <p>
-          <a href={syllabusUrl} target="_blank" rel="noopener noreferrer">
+          <a href={syllabusUrl} target="_blank" rel="noopener noreferrer" >
             {fileName || 'Download Syllabus'}
           </a>
         </p>
@@ -216,7 +216,7 @@ function CourseContent() {
           
           {content.fileUrl && (
             <div>
-              <a href={content.fileUrl} target="_blank" rel="noopener noreferrer">
+              <a href={content.fileUrl} target="_blank" rel="noopener noreferrer" className="link-button">
                 Download File
               </a>
             </div>
@@ -224,7 +224,7 @@ function CourseContent() {
           
           {content.videoUrl && (
             <div>
-              <a href={content.videoUrl} target="_blank" rel="noopener noreferrer">
+              <a href={content.videoUrl} target="_blank" rel="noopener noreferrer" className="link-button">
                 Watch Video
               </a>
             </div>
@@ -233,7 +233,7 @@ function CourseContent() {
 
           {content.assignmentUrl && (
                       <div>
-                        <a href={content.assignmentUrl} target="_blank" rel="noopener noreferrer">
+                        <a href={content.assignmentUrl} target="_blank" rel="noopener noreferrer" className="link-button"> 
                           Assignment 
                         </a>
                       </div>

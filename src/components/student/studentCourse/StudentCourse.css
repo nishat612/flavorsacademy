@@ -1,0 +1,50 @@
+/* Container styling */
+.courses-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  /* Title styling */
+  .courses-container h2 {
+    font-size: 1.8em;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .course-list {
+    list-style-position: inside;
+    padding-left: 0;
+    margin: 0;
+  }
+  
+  .course-item {
+    margin: 10px 0;
+  }
+  
+  /* Course link styling */
+  .course-link {
+    font-size: 1em;
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 8px 15px;
+    border-radius: 5px;
+    background-color: #f0f8ff;
+    display: inline-block;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .course-link:hover {
+    color: #fff;
+    background-color: #007bff;
+  }
+  
+  /* Remove extra indentation of the ordered list */
+  .course-list li::marker {
+    font-weight: bold;
+    padding-right: 5px;
+  }
+  
+  

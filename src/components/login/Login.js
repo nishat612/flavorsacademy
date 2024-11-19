@@ -22,10 +22,14 @@ function Login({ setRole, setFirstName, setUserId }) {
         localStorage.setItem('user_id', response.user_id);
         localStorage.setItem('role', response.role);
         localStorage.setItem('first_name', response.first_name);
-
+       
          // Store teacherId explicitly if the role is teacher
       if (response.role === "teacher") {
         localStorage.setItem('teacherId', response.user_id);
+      }
+      if (response.role === "student") {
+        localStorage.setItem('studentId', response.user_id);
+        
       }
 
         // Set user data in state

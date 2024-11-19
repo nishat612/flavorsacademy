@@ -6,6 +6,8 @@ import Login from './components/login/Login';
 import ForgotPassword from './components/login/ForgotPassword';
 import SignUp from './components/signUp/Signup';
 import CourseContent from './components/teacher/courseContent/CourseContent';
+import StudentCourseContent from './components/student/courseContent/StudentCourseContent';
+import StudentCourse from './components/student/studentCourse/StudentCourse';
 import Course from './components/teacher/course/Course';
 import TeacherDashboard from './components/teacher/dashboard/TeacherDashboard';
 import StudentDashboard from './components/student/dashboard/StudentDashboard';
@@ -31,6 +33,8 @@ const AppRoutes = ({ setRole, setFirstName, firstName,  setUserId, userId, teach
       <Route path="/uploadQuiz" element={<UploadQuiz />} />
       <Route path="/uploadVideo" element={<UploadVideo />} />
       <Route path="/courseContent" element={<CourseContent />} />
+      <Route path="/studentCourseContent/:courseId" element={<StudentCourseContent />} />
+      <Route path="/studentCourse" element={<StudentCourse />} />
     </Routes>
   );
 };
