@@ -3,6 +3,7 @@ import os
 
 # Add the backend directory to the system path
 sys.path.insert(0, r"C:\CourseWork\code\flavors-academy-local\backend")
+from flask_session import Session
 
 # Import app and required functions
 from app import app, execute_query, fetch_data
