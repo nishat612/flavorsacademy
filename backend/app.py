@@ -7,7 +7,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
 import secrets
 app = Flask(__name__)
-import os
 app.secret_key = secrets.token_hex(16)  # Replace with a strong secret key
 app.config['SESSION_TYPE'] = 'filesystem'  # Store session data on the server's filesystem
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Adjust based on your testing environment
@@ -19,12 +18,12 @@ Session(app)
 
 CORS(app, supports_credentials=True)  # Enable credentials to allow cookies in CORS
 
-db_config = {
-    'host': os.getenv('DB_HOST'),
-    'user': os.getenv('DB_USER'),
-    'password': os.getenv('DB_PASSWORD'),
-    'database': os.getenv('DB_NAME')
-}
+db = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="root",
+    database="flavorsacademy"
+)
 
 def execute_query(query, values):
     db = mysql.connector.connect(
@@ -312,12 +311,11 @@ def handle_syllabus():
 
 @app.route('/courseContentHandler', methods=['GET', 'POST'])
 def handle_course_content():
-    
+    print("inside course handler")
     # Retrieve course_id and teacher_id from URL parameters for GET or from request body for POST
     course_id = request.args.get('courseId') if request.method == 'GET' else request.json.get('courseId')
     teacher_id = request.args.get('teacherId') if request.method == 'GET' else request.json.get('teacherId')
     content_name = 'course content'
-
     # Log incoming data for debugging
     print("Received course content data:", {
         "course_id": course_id,
@@ -349,8 +347,9 @@ def handle_course_content():
 
     # Handle POST request: save or update course content
     elif request.method == 'POST':
-        new_content = request.json.get('content')  # New content to be appended
-
+        print("inside component handler post")
+         # New content to be appended
+        print("Extracted content:", new_content)
         # Validate new content
         if not new_content:
             return jsonify({"message": "Content data is required"}), 400

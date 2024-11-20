@@ -47,8 +47,12 @@ function Course({ teacherId: propTeacherId }) {
   const handleCourseClick = (course) => {
     console.log("Selected Course:", course);
     console.log("Teacher ID on Course Click:", teacherId);
-    // Navigate to course content with course details in location state
-    navigate('/courseContent', { state: { courseId: course.idcourse, teacherId, courseName: course.name } });
+    localStorage.setItem("courseName", course.name);
+    if (course.idcourse && teacherId) {
+      navigate(`/courseContent/${course.idcourse}/${teacherId}`, { state: { courseName: course.name, courseId: course.idcourse, teacherId: teacherId} });
+    } else {
+      console.error("Missing courseId or teacherId for navigation.");
+    }
   };
 
   return (

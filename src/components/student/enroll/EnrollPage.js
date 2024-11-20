@@ -48,7 +48,7 @@ function EnrollPage() {
         setShowSuccessToast(true);
         setTimeout(() => setShowSuccessToast(false), 5000); // Hide toast after 5 seconds
         // Navigate to course content page after successful enrollment
-        navigate('/studentCourseContent', { state: { courseId, teacherId, courseName } });
+        navigate(`/studentCourseContent/${courseId}`, { state: { courseId, teacherId, courseName } });
       } else if (response.message === "Student already enrolled") {
         // Show failure toast if student is already enrolled
         setShowFailureToast(true);

@@ -195,26 +195,28 @@ export const getCourseContentData = async (courseId, teacherId) => {
 };
 
 // Function to save or update JSON data for course content
-export const saveCourseContentData = async ({ courseId, teacherId, contentName, contentData }) => {
+export const saveCourseContentData = async (data) => {
+  console.log("Data being sent to the API:", data); // Log the data being sent
   try {
     const response = await fetch('/courseContentHandler', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include',
-      body: JSON.stringify({ 
-        courseId, 
-        teacherId, 
-        contentName: contentName || 'course content',  // Default to 'course content' if not specified
-        content: contentData  // Send course content data
-      }),
+      body: JSON.stringify(data),
     });
-    return response.json();
+    console.log("API call response:", response); // Log the response
+    console.log("API call success:", response.ok);
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status} - ${response.statusText}`);
+    }
+    return await response.json();
   } catch (error) {
-    console.error("Error saving course content data:", error);
+    console.error('Failed to save course content data:', error);
+    throw error;
   }
 };
+
 
 // Function to get all available courses
 export const getCourses = async () => {

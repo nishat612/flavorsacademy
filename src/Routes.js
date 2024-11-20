@@ -16,7 +16,7 @@ import EnrollPage from './components/student/enroll/EnrollPage';
 
 
 // Main component for defining application routes
-const AppRoutes = ({ setRole, setFirstName, firstName, setUserId, userId, teacherId }) => {
+const AppRoutes = ({ setRole, setFirstName, firstName, setUserId, userId, teacherId, courseId }) => {
   return (
     <Routes>
       {/* Route for the home page */}
@@ -39,7 +39,7 @@ const AppRoutes = ({ setRole, setFirstName, firstName, setUserId, userId, teache
       <Route path="/signup" element={<SignUp />} />
 
       {/* Route for the Teacher's Course page, passing user and teacher IDs as props */}
-      <Route path="/course" element={<Course userId={userId} teacherId={teacherId} />} />
+      <Route path="/course" element={<Course userId={userId} teacherId={teacherId} courseId={courseId} />} />
 
       {/* Route for the Teacher Dashboard, displaying the teacher's first name */}
       <Route path="/teacherDashboard" element={<TeacherDashboard firstName={firstName} />} />
@@ -56,7 +56,8 @@ const AppRoutes = ({ setRole, setFirstName, firstName, setUserId, userId, teache
 
 
       {/* Route for the Course Content page (for teachers) */}
-      <Route path="/courseContent" element={<CourseContent />} />
+      <Route path="/courseContent/:courseId/:teacherId" element={<CourseContent />} />
+
 
       {/* Route for viewing course content, specific to students, with course ID parameter */}
       <Route path="/studentCourseContent/:courseId" element={<StudentCourseContent />} />

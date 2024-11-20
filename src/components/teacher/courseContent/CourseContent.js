@@ -1,14 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { getCourseContentData, getCourseContent, saveCourseContentData, saveCourseDescription, getSyllabus, saveSyllabus } from '../../../services/apiService';
 import './CourseContent.css';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate, Link , useParams} from 'react-router-dom';
 import UploadModal from './UploadModal';
 import AddContentModal from './AddContentModal';
 
 function CourseContent() {
+  const { courseId: courseIdParam, teacherId: teacherIdParam } = useParams();
   const location = useLocation(); // Access location state for course details
   const navigate = useNavigate(); // Navigation hook for routing
-  const { courseId, teacherId, courseName } = location.state || {}; // Extract course info from state
+  // const { courseId, teacherId, courseName } = location.state || {}; // Extract course info from state
+  // Retrieve courseId, teacherId, and courseName from location.state or URL parameters as fallback
+  const courseId = location.state?.courseId || courseIdParam;
+  const teacherId = location.state?.teacherId || teacherIdParam;
+  const courseName = location.state?.courseName || localStorage.getItem("courseName") || "Course";
+  //
 
   // State variables for managing course content, syllabus, and UI interactions
   const [syllabusUrl, setSyllabusUrl] = useState('');
@@ -26,6 +32,8 @@ function CourseContent() {
 
   // Fetches syllabus, course description, and course content data from the server
   const fetchData = useCallback(async () => {
+    console.log(courseName)
+    console.log(courseId, teacherId);
     if (!courseId || !teacherId) {
       console.error("courseId or teacherId is undefined");
       return;
@@ -131,33 +139,40 @@ function CourseContent() {
 
   // Saves or updates a course content JSON block in state and database
   const handleSaveContent = async (newContent) => {
-    setCourseContents((prevContents) => {
-      // If editing, update the content, otherwise add new content
-      const updatedContents = editingContent
-        ? prevContents.map((content) =>
-            content.contentNo === editingContent.contentNo ? newContent : content
-          )
-        : [...prevContents, newContent];
+    const teacherIdToUse = teacherId || localStorage.getItem('teacherId');
+    
+    const dataToSave = {
+      courseId,
+      teacherId: teacherIdToUse,
+      contentName: 'course content',
+      content: newContent,
+    };
   
-      // Save updated contents to the database
-      saveCourseContentData({
-        courseId,
-        teacherId,
-        contentName: 'course content',
-        contentData: updatedContents,
-      }).catch((error) => console.error("Error saving course content data:", error));
+    console.log("Data being sent to saveCourseContentData:", dataToSave);
   
-      return updatedContents;
-    });
+    try {
+      const response = await saveCourseContentData(dataToSave);
+      console.log("Course content saved successfully:", response);
   
-    // Re-fetch data to ensure it’s up-to-date (optional)
-    fetchData();
-    setShowAddContentModal(false); // Close the content modal
+      // Update the state with the new content
+      setCourseContents((prevContents) => [...prevContents, newContent]);
+      fetchData(); // Optionally, re-fetch data to update the view
+    } catch (error) {
+      console.error("Failed to save course content data:", error);
+    }
   };
+  
+  useEffect(() => {
+    console.log("Location state:", location.state);
+  }, [location.state]);
+  
+
   
   return (
     <div className="course-content-container">
-      <h1>{courseName}</h1>
+      <h1 style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+        {courseName}
+      </h1>
       
       {/* Course Description Section */}
       <h2>Course Description</h2>
