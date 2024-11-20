@@ -4,26 +4,27 @@ from flask_cors import CORS
 from flask_session import Session
 import mysql.connector
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from flask_cors import CORS
 import secrets
 app = Flask(__name__)
+import os
 app.secret_key = secrets.token_hex(16)  # Replace with a strong secret key
 app.config['SESSION_TYPE'] = 'filesystem'  # Store session data on the server's filesystem
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Adjust based on your testing environment
 app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production over HTTPS
 app.config['SESSION_PERMANENT'] = False  # Set to False to make the session non-permanent
 app.config['PERMANENT_SESSION_LIFETIME'] = 0  # Session expires immediately on browser close
-
+CORS(app)
 Session(app)
 
 CORS(app, supports_credentials=True)  # Enable credentials to allow cookies in CORS
 
-db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="root",
-    database="flavorsacademy"
-)
+db_config = {
+    'host': os.getenv('DB_HOST'),
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD'),
+    'database': os.getenv('DB_NAME')
+}
 
 def execute_query(query, values):
     db = mysql.connector.connect(
@@ -217,11 +218,13 @@ def get_course_content():
 
 @app.route('/courseContent', methods=['POST'])
 def save_course_content():
+
     data = request.get_json()
     course_id = data.get('courseId')
     teacher_id = data.get('teacherId')
     content_name = data.get('contentName')
     text = data.get('text')
+    print("Received data:", data)
     if not course_id or not teacher_id:
         return jsonify({"message": "Course ID and Teacher ID are required"}), 400
 
@@ -309,11 +312,20 @@ def handle_syllabus():
 
 @app.route('/courseContentHandler', methods=['GET', 'POST'])
 def handle_course_content():
+    
+    # Retrieve course_id and teacher_id from URL parameters for GET or from request body for POST
     course_id = request.args.get('courseId') if request.method == 'GET' else request.json.get('courseId')
     teacher_id = request.args.get('teacherId') if request.method == 'GET' else request.json.get('teacherId')
-    
     content_name = 'course content'
-     
+
+    # Log incoming data for debugging
+    print("Received course content data:", {
+        "course_id": course_id,
+        "teacher_id": teacher_id,
+        "new_content": request.json.get('content') if request.method == 'POST' else None
+    })
+
+    # Validate course_id and teacher_id
     if not course_id or not teacher_id:
         return jsonify({"message": "Course ID and Teacher ID are required"}), 400
 
@@ -325,8 +337,8 @@ def handle_course_content():
                 (course_id, teacher_id, content_name)
             )
 
-            if content:
-                # Parse and return JSON data if content exists
+            # If content exists, parse it as JSON and return; if not, return an empty string
+            if content and content[0]['text']:
                 return jsonify({"contentData": json.loads(content[0]['text'])}), 200
             else:
                 # Return empty string if no content exists
@@ -339,6 +351,7 @@ def handle_course_content():
     elif request.method == 'POST':
         new_content = request.json.get('content')  # New content to be appended
 
+        # Validate new content
         if not new_content:
             return jsonify({"message": "Content data is required"}), 400
 
@@ -350,12 +363,15 @@ def handle_course_content():
             )
 
             if existing_content:
-                # Append new content to existing JSON array
-                existing_json = json.loads(existing_content[0]['text']) if existing_content[0]['text'] else []
+                # Parse existing content or use empty array if JSON decoding fails
+                try:
+                    existing_json = json.loads(existing_content[0]['text']) if existing_content[0]['text'] else []
+                except json.JSONDecodeError:
+                    existing_json = []
+
+                # Append new content and update in the database
                 existing_json.append(new_content)
                 updated_text = json.dumps(existing_json)
-                
-                # Update course content in the database
                 execute_query(
                     "UPDATE course_content SET text = %s WHERE cid = %s AND tid = %s AND content_name = %s",
                     (updated_text, course_id, teacher_id, content_name)
@@ -374,6 +390,7 @@ def handle_course_content():
         except Exception as e:
             print(f"Error saving course content: {e}")
             return jsonify({"message": "Error saving course content"}), 500
+
         
 # 1. Get all courses
 
