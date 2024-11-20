@@ -1,3 +1,5 @@
+gunicorn==20.1.0  # or the latest version available
+
 annotated-types==0.7.0
 anyio==4.4.0
 asgiref==3.8.1
