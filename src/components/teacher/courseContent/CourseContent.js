@@ -144,7 +144,7 @@ function CourseContent() {
     const dataToSave = {
       courseId,
       teacherId: teacherIdToUse,
-      contentName: 'course content',
+      content: 'course content',
       content: newContent,
     };
   

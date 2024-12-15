@@ -315,6 +315,7 @@ def handle_course_content():
     # Retrieve course_id and teacher_id from URL parameters for GET or from request body for POST
     course_id = request.args.get('courseId') if request.method == 'GET' else request.json.get('courseId')
     teacher_id = request.args.get('teacherId') if request.method == 'GET' else request.json.get('teacherId')
+     
     content_name = 'course content'
     # Log incoming data for debugging
     print("Received course content data:", {
@@ -329,7 +330,9 @@ def handle_course_content():
 
     # Handle GET request: retrieve course content
     if request.method == 'GET':
+        print("cid, tid: ", course_id, teacher_id)
         try:
+            print("inside try")
             content = fetch_data(
                 "SELECT text FROM course_content WHERE cid = %s AND tid = %s AND content_name = %s", 
                 (course_id, teacher_id, content_name)
@@ -347,8 +350,9 @@ def handle_course_content():
 
     # Handle POST request: save or update course content
     elif request.method == 'POST':
+        new_content = request.json.get('content')
         print("inside component handler post")
-         # New content to be appended
+    # New content to be appended
         print("Extracted content:", new_content)
         # Validate new content
         if not new_content:
@@ -395,6 +399,7 @@ def handle_course_content():
 
 @app.route('/api/courses', methods=['GET'])
 def get_courses():
+    
     try:
         query = "SELECT * FROM course"
         courses = fetch_data(query, ())
@@ -422,24 +427,37 @@ def get_courses():
 # 2. Get specific course details by course ID
 @app.route('/api/courses/<int:idcourse>', methods=['GET'])
 def get_course(idcourse):
+   
     try:
+        idcourse = str(idcourse)
+        print(type(idcourse))
         query = "SELECT * FROM course WHERE idcourse = %s"
-        course = fetch_data(query, (idcourse))
+        
+        # Fetch the course data
+        course = fetch_data(query, (idcourse,))
        
         if not course:
             return jsonify({"message": "Course not found"}), 404
 
-        course[0]['sid'] = json.loads(course[0]['sid']) if course[0]['sid'] else []
+        # Safely process the 'sid' field
+        if course[0].get('sid') and isinstance(course[0]['sid'], str):
+            course[0]['sid'] = json.loads(course[0]['sid'])
+        else:
+            course[0]['sid'] = []  # Default to an empty list if 'sid' is not a valid JSON string
+        print(f"Fetched course: {course[0]}")
+        print(f"Processing sid: {course[0].get('sid')}")
         return jsonify(course[0]), 200
     except Exception as e:
         print(f"Error fetching course: {e}")
         return jsonify({"message": "Error fetching course"}), 500
+
 
 # 3. Enroll a student in a course
 @app.route('/api/courses/<int:idcourse>/enroll', methods=['PUT'])
 def enroll_student(idcourse):
     data = request.get_json()
     student_id = data.get("student_id")
+    print("inside API, cid, sid", idcourse, student_id)
 
     if not student_id:
         return jsonify({"message": "student_id is required"}), 400
@@ -453,7 +471,7 @@ def enroll_student(idcourse):
 
         # Check if sid is already populated
         current_sid = course[0]['sid']
-        
+        print("current", current_sid )
         if current_sid:
             # If sid exists and matches the student ID, prevent duplicate enrollment
             if current_sid == str(student_id):

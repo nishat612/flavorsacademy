@@ -58,7 +58,9 @@ function StudentDashboard({ studentId }) {
   const handleEnrollClick = async (courseId, teacherId, courseName) => {
     console.log("courseId:", courseId, "teacherId:", teacherId, "Course Name: ", courseName);
     try {
+      console.log(courseId)
       const course = await getCourseById(courseId); // Fetch course details
+      console.log(course)
       const teacherData = await getTeacherById(teacherId); // Fetch teacher details
 
       // Check if student is already enrolled in the course

@@ -50,6 +50,7 @@ function EnrollPage() {
         // Navigate to course content page after successful enrollment
         navigate(`/studentCourseContent/${courseId}`, { state: { courseId, teacherId, courseName } });
       } else if (response.message === "Student already enrolled") {
+        console.log("student already enrolled")
         // Show failure toast if student is already enrolled
         setShowFailureToast(true);
         setTimeout(() => setShowFailureToast(false), 5000);
